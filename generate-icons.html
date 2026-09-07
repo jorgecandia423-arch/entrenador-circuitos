@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head><title>Generate Icons</title></head>
+<body>
+<canvas id="c192" width="192" height="192"></canvas>
+<canvas id="c512" width="512" height="512"></canvas>
+<script>
+function drawIcon(canvas) {
+  const s = canvas.width;
+  const ctx = canvas.getContext('2d');
+  
+  // Background
+  const bgGrad = ctx.createLinearGradient(0, 0, s, s);
+  bgGrad.addColorStop(0, '#0f172a');
+  bgGrad.addColorStop(1, '#1e293b');
+  
+  // Rounded rect
+  const r = s * 0.167;
+  ctx.beginPath();
+  ctx.moveTo(r, 0);
+  ctx.lineTo(s - r, 0);
+  ctx.arcTo(s, 0, s, r, r);
+  ctx.lineTo(s, s - r);
+  ctx.arcTo(s, s, s - r, s, r);
+  ctx.lineTo(r, s);
+  ctx.arcTo(0, s, 0, s - r, r);
+  ctx.lineTo(0, r);
+  ctx.arcTo(0, 0, r, 0, r);
+  ctx.closePath();
+  ctx.fillStyle = bgGrad;
+  ctx.fill();
+  
+  // Lightning bolt
+  const boltGrad = ctx.createLinearGradient(s*0.35, s*0.15, s*0.67, s*0.85);
+  boltGrad.addColorStop(0, '#38bdf8');
+  boltGrad.addColorStop(1, '#a78bfa');
+  
+  // Glow
+  ctx.shadowColor = '#38bdf8';
+  ctx.shadowBlur = s * 0.06;
+  
+  ctx.beginPath();
+  ctx.moveTo(s*0.54, s*0.15);
+  ctx.lineTo(s*0.35, s*0.48);
+  ctx.lineTo(s*0.46, s*0.48);
+  ctx.lineTo(s*0.40, s*0.85);
+  ctx.lineTo(s*0.67, s*0.46);
+  ctx.lineTo(s*0.54, s*0.46);
+  ctx.closePath();
+  ctx.fillStyle = boltGrad;
+  ctx.fill();
+  
+  ctx.shadowBlur = 0;
+  
+  // Circuit traces
+  ctx.strokeStyle = '#38bdf8';
+  ctx.lineWidth = s * 0.008;
+  ctx.globalAlpha = 0.3;
+  ctx.beginPath();
+  ctx.moveTo(s*0.21, s*0.73);
+  ctx.lineTo(s*0.35, s*0.73);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(s*0.21, s*0.73, s*0.02, 0, Math.PI*2);
+  ctx.fillStyle = '#38bdf8';
+  ctx.globalAlpha = 0.5;
+  ctx.fill();
+  
+  ctx.strokeStyle = '#a78bfa';
+  ctx.globalAlpha = 0.3;
+  ctx.beginPath();
+  ctx.moveTo(s*0.79, s*0.27);
+  ctx.lineTo(s*0.67, s*0.27);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(s*0.79, s*0.27, s*0.02, 0, Math.PI*2);
+  ctx.fillStyle = '#a78bfa';
+  ctx.globalAlpha = 0.5;
+  ctx.fill();
+  
+  ctx.globalAlpha = 1;
+}
+
+drawIcon(document.getElementById('c192'));
+drawIcon(document.getElementById('c512'));
+
+// Download
+function download(canvas, name) {
+  const link = document.createElement('a');
+  link.download = name;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+document.getElementById('c192').onclick = () => download(document.getElementById('c192'), 'icon-192.png');
+document.getElementById('c512').onclick = () => download(document.getElementById('c512'), 'icon-512.png');
+
+document.body.innerHTML += '<p>Click each canvas to download the PNG icon.</p>';
+</script>
+</body>
+</html>
