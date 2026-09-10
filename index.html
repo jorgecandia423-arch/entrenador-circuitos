@@ -1179,19 +1179,38 @@ function calc(){
       edges.forEach(e => {
         if(e.r !== 'AMMETER') { adj[e.nA].push(e.nB); adj[e.nB].push(e.nA); }
       });
-      function bfsF(start) {
-        let q = [start], dist = { [start]: 0 }, fur = start, mD = 0;
-        while(q.length > 0) {
-          let c = q.shift(), d = dist[c];
-          if (d > mD) { mD = d; fur = c; }
-          adj[c].forEach(nb => {
-            if (dist[nb] === undefined) { dist[nb] = d + 1; q.push(nb); }
-          });
+      
+      let nodeMinX = {}, nodeMaxX = {};
+      nodes.forEach(n => { nodeMinX[n] = Infinity; nodeMaxX[n] = -Infinity; });
+      PTS.forEach(p => {
+        const root = find(p);
+        if (ns2.has(root) && SP[p]) {
+          if (SP[p].x < nodeMinX[root]) nodeMinX[root] = SP[p].x;
+          if (SP[p].x > nodeMaxX[root]) nodeMaxX[root] = SP[p].x;
         }
-        return fur;
+      });
+      
+      let sortedLeft = [...nodes].sort((a,b) => (nodeMinX[a] !== nodeMinX[b]) ? nodeMinX[a] - nodeMinX[b] : nodeMaxX[a] - nodeMaxX[b]);
+      let sortedRight = [...nodes].sort((a,b) => (nodeMaxX[b] !== nodeMaxX[a]) ? nodeMaxX[b] - nodeMaxX[a] : nodeMinX[b] - nodeMinX[a]);
+      
+      testSrc = sortedLeft[0];
+      testSnk = sortedRight[0];
+      
+      if (testSrc === testSnk) {
+        function bfsF(start) {
+          let q = [start], dist = { [start]: 0 }, fur = start, mD = 0;
+          while(q.length > 0) {
+            let c = q.shift(), d = dist[c];
+            if (d > mD) { mD = d; fur = c; }
+            adj[c].forEach(nb => {
+              if (dist[nb] === undefined) { dist[nb] = d + 1; q.push(nb); }
+            });
+          }
+          return fur;
+        }
+        testSrc = bfsF(nodes[0]);
+        testSnk = bfsF(testSrc);
       }
-      testSrc = bfsF(nodes[0]);
-      testSnk = bfsF(testSrc);
     }
     ns2.add(testSrc); ns2.add(testSnk);
   } else {
