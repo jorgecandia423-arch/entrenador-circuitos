@@ -222,7 +222,7 @@
       <div class="ex-info" id="exInfo" style="display:none"></div>
       <textarea id="conIn" placeholder="FUENTE+ -> R1_I&#10;R1_D -> R6_I&#10;R6_D -> FUENTE-" oninput="dibujar()"></textarea>
       <div class="hint">
-        💡 Haz <strong>clic en un tornillo</strong> y luego en otro para conectarlos/desconectarlos rápidamente. Usa los empalmes centrales (J1 a J5) para unir cables al aire libre.
+        💡 Haz <strong>clic en un tornillo</strong> y luego en otro para conectarlos/desconectarlos rápidamente. Usa los empalmes (J, JL, JR) para unir cables al aire libre.
       </div>
       <div class="acts">
         <button class="btn btn-err" onclick="limpiar()">🗑️ Limpiar Todo</button>
@@ -281,7 +281,7 @@ let RV={...DEF_R};
 
 const PTS=[];
 for(let i=1;i<=10;i++){PTS.push(`R${i}_I`,`R${i}_D`)}
-for(let i=1;i<=5;i++){PTS.push(`J${i}`)}
+for(let i=1;i<=5;i++){PTS.push(`J${i}`,`JL${i}`,`JR${i}`)}
 PTS.push('FUENTE+','FUENTE-');
 
 function mkSP(){
@@ -290,6 +290,8 @@ function mkSP(){
     p[`R${i+1}_I`]={x:LI,y:RY[i]};p[`R${i+1}_D`]={x:LD,y:RY[i]};
     p[`R${i+6}_I`]={x:RI_X,y:RY[i]};p[`R${i+6}_D`]={x:RD_X,y:RY[i]};
     p[`J${i+1}`]={x:BW/2, y:RY[i]};
+    p[`JL${i+1}`]={x:45, y:RY[i]};
+    p[`JR${i+1}`]={x:BW-45, y:RY[i]};
   }
   p['FUENTE+']={x:FPX,y:FY};p['FUENTE-']={x:FMX,y:FY};
   return p;
@@ -636,7 +638,12 @@ function drawBoard(){
   cx.beginPath();cx.moveTo(BW/2,40);cx.lineTo(BW/2,BH-60);cx.stroke();
 
   for(let i=1;i<=10;i++){const iz=SP[`R${i}_I`],de=SP[`R${i}_D`];drawRes(iz.x,iz.y,de.x,de.y,`R${i}`,RV[i])}
-  for(let i=1;i<=5;i++){const jp=SP[`J${i}`];drawScrew(jp.x,jp.y);if(showLbl)drawLabel(jp.x,jp.y,`J${i}`)}
+  for(let i=1;i<=5;i++){
+    ['J','JL','JR'].forEach(px=>{
+      const nm=`${px}${i}`;
+      if(SP[nm]){drawScrew(SP[nm].x,SP[nm].y);if(showLbl)drawLabel(SP[nm].x,SP[nm].y,nm)}
+    });
+  }
   drawFuente();
   if(showLbl)for(let i=1;i<=10;i++){drawLabel(SP[`R${i}_I`].x,SP[`R${i}_I`].y,`R${i}_I`);drawLabel(SP[`R${i}_D`].x,SP[`R${i}_D`].y,`R${i}_D`);}
   if(showLbl){drawLabel(SP['FUENTE+'].x,SP['FUENTE+'].y,'FUENTE+');drawLabel(SP['FUENTE-'].x,SP['FUENTE-'].y,'FUENTE-');}
