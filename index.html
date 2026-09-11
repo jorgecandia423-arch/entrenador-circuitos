@@ -307,7 +307,7 @@ const EX={
   e4:{t:'Ej. 4: Resistencias Equivalentes Rab', desc:'Circuito puente/mixto.\nRab = <b>11 Ω</b>', V:12, con:`FUENTE+ -> R1_I\nFUENTE- -> R2_D\nR2_D -> R3_D\nR1_D -> R2_I\nR1_D -> R3_I\nR1_D -> R4_I\nR1_D -> R5_I\nR1_D -> R6_I\nR4_D -> R5_D\nR4_D -> R8_I\nR8_D -> R6_D\nR7_I -> R3_D\nR7_D -> R8_D`, vals:{1:8, 2:18, 3:9, 4:20, 5:5, 6:20, 7:2, 8:1}},
   e5:{t:'Ej. 5: Resistencia Equivalente Req', desc:'Circuito mixto de 7 resistencias.\nReq = R1 + [ (R2 + (R3||R4)) || (R5 + R6) ] + R7 ≈ <b>1481.11 Ω</b>', V:12, con:`FUENTE+ -> R1_I\nR1_D -> R2_I\nR1_D -> R5_I\nR2_D -> R3_I\nR3_I -> R4_I\nR3_D -> R4_D\nR5_D -> R6_I\nR4_D -> R6_D\nR6_D -> R7_D\nR7_I -> FUENTE-`, vals:{1:820, 2:1000, 3:470, 4:560, 5:680, 6:100, 7:180}},
   e6:{t:'Ej. 6: Resistencia Equivalente Req', desc:'Req ≈ <b>5.91 Ω</b>', V:12, con:`FUENTE+ -> R1_I\nFUENTE- -> R5_I\nR1_D -> R6_I\nR1_D -> R2_I\nR2_D -> R7_I\nR2_D -> R3_I\nR3_D -> R4_I\nR5_D -> R6_D\nR6_D -> R7_D\nR7_D -> R8_D\nR4_D -> R8_I`, vals:{1:2, 2:3, 3:4, 4:5, 5:1, 6:6, 7:4, 8:3}},
-  e7:{t:'Ej. 7: Resistencia Equivalente Rab', desc:'Req = <b>11.2 Ω</b>', V:12, con:`FUENTE+ -> R1_I\nFUENTE- -> R2_D\nR2_D -> R3_D\nR2_D -> R5_I\nR2_D -> R6_D\nR2_D -> R8_D\nR1_D -> R2_I\nR1_D -> R3_I\nR1_D -> R4_I\nR4_D -> R5_D\nR4_D -> R6_I\nR4_D -> R7_I\nR7_D -> R8_I`, vals:{1:10, 2:3, 3:6, 4:1, 5:12, 6:4, 7:1, 8:5}},
+  e7:{t:'Ej. 7: Resistencia Equivalente Rab', desc:'Req = R1 + [ R2 || R3 || (R4 + (R5 || R6 || (R7 + R8))) ] ≈ <b>1032.27 Ω</b>', V:12, con:`FUENTE+ -> R1_I\nR1_D -> R2_I\nR2_I -> R3_I\nR3_I -> R4_I\nR4_D -> R6_I\nR6_I -> R7_I\nR7_I -> R5_I\nR7_D -> R8_I\nR2_D -> R3_D\nR3_D -> R5_D\nR5_D -> R6_D\nR6_D -> R8_D\nR8_D -> FUENTE-`, vals:{1:820, 2:1000, 3:470, 4:560, 5:680, 6:100, 7:180, 8:220}},
   e8:{t:'Ej. 8: Resistencia Equivalente Req', desc:'Circuito con cortocircuito.\nReq = <b>4000 Ω (4kΩ)</b>', V:12, con:`FUENTE+ -> R1_I\nFUENTE- -> R2_D\nR1_D -> R2_I\nR1_D -> R3_I\nR3_D -> R4_I\nR3_D -> R2_D\nR4_D -> R2_D`, vals:{1:2000, 2:6000, 3:3000, 4:3000}},
   e9:{t:'Ej. 9: Resistencia Equivalente (Resp=4Ω)', desc:'Conexión en delta-estrella/paralelos equivalentes.\nReq ≈ <b>4.2 Ω</b>', V:12, con:`FUENTE+ -> R1_I\nFUENTE+ -> R2_I\nFUENTE+ -> R3_I\nFUENTE- -> R4_I\nFUENTE- -> R5_I\nFUENTE- -> R6_I\nR1_D -> R4_D\nR2_D -> R5_D\nR3_D -> R6_D`, vals:{1:12, 2:6, 3:4, 4:6, 5:12, 6:4}},
   e10:{t:'Ej. 10: Hallar R (Req=50Ω)', desc:'Req=50Ω → R=<b>16Ω</b>', V:12, con:`FUENTE+ -> R1_I\nR1_D -> R2_I\nR1_D -> R3_I\nR2_D -> R4_I\nR4_D -> R5_I\nR4_D -> R6_I\nR4_D -> R7_I\nR5_D -> FUENTE-\nR6_D -> FUENTE-\nR7_D -> FUENTE-\nR3_D -> FUENTE-`, vals:{1:30, 2:10, 3:60, 4:16, 5:12, 6:12, 7:12}},
@@ -1180,18 +1180,27 @@ function calc(){
         if(e.r !== 'AMMETER') { adj[e.nA].push(e.nB); adj[e.nB].push(e.nA); }
       });
       
-      let nodeMinX = {}, nodeMaxX = {};
-      nodes.forEach(n => { nodeMinX[n] = Infinity; nodeMaxX[n] = -Infinity; });
+      let nodeMinX = {}, nodeMaxX = {}, nodeSize = {};
+      nodes.forEach(n => { nodeMinX[n] = Infinity; nodeMaxX[n] = -Infinity; nodeSize[n] = 0; });
       PTS.forEach(p => {
         const root = find(p);
         if (ns2.has(root) && SP[p]) {
           if (SP[p].x < nodeMinX[root]) nodeMinX[root] = SP[p].x;
           if (SP[p].x > nodeMaxX[root]) nodeMaxX[root] = SP[p].x;
+          nodeSize[root]++;
         }
       });
       
-      let sortedLeft = [...nodes].sort((a,b) => (nodeMinX[a] !== nodeMinX[b]) ? nodeMinX[a] - nodeMinX[b] : nodeMaxX[a] - nodeMaxX[b]);
-      let sortedRight = [...nodes].sort((a,b) => (nodeMaxX[b] !== nodeMaxX[a]) ? nodeMaxX[b] - nodeMaxX[a] : nodeMinX[b] - nodeMinX[a]);
+      let sortedLeft = [...nodes].sort((a,b) => {
+        if (nodeMinX[a] !== nodeMinX[b]) return nodeMinX[a] - nodeMinX[b];
+        if (nodeMaxX[a] !== nodeMaxX[b]) return nodeMaxX[a] - nodeMaxX[b];
+        return nodeSize[b] - nodeSize[a];
+      });
+      let sortedRight = [...nodes].sort((a,b) => {
+        if (nodeMaxX[b] !== nodeMaxX[a]) return nodeMaxX[b] - nodeMaxX[a];
+        if (nodeSize[b] !== nodeSize[a]) return nodeSize[b] - nodeSize[a];
+        return nodeMinX[a] - nodeMinX[b];
+      });
       
       testSrc = sortedLeft[0];
       testSnk = sortedRight[0];
