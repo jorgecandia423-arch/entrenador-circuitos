@@ -1,4 +1,4 @@
-const CACHE_NAME = 'circuit-trainer-v13';
+const CACHE_NAME = 'circuit-trainer-v14';
 const ASSETS = [
   './',
   './index.html',
